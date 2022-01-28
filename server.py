@@ -66,7 +66,7 @@ class MyWebServer(socketserver.BaseRequestHandler):
             302: "Found\r\n\r\nConnection Closed\r\n",
             404: 'HTTP/1.1 404 Not Found\r\n\r\nConnection Closed\r\n',
             405: 'HTTP/1.1 405 Method Not Allowed\r\n\r\nConnection Closed\r\n',
-            505: 'HTTP/1.1 505 HTTP Version Not Support\r\n\r\nConnection Closed\r\n'
+            505: 'HTTP/1.1 505 HTTP Version Not Supported\r\n\r\nConnection Closed\r\n'
         }
 
         # variable for storing http responses
