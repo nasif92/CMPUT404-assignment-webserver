@@ -3,8 +3,9 @@ from fileinput import filename
 import socketserver
 from os import path
 
-# Copyright 2013 Abram Hindle, Eddie Antonio Santos, Nasif Hossain
-# 
+# Copyright 2013 Abram Hindle, Eddie Antonio Santos
+# Copyright 2022 Nasif Hossain
+#
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -49,10 +50,10 @@ class MyWebServer(socketserver.BaseRequestHandler):
 
         # preliminary tests for required http protocol and method
         if http_protocol != "HTTP/1.1":
-            self.http_response = self.getStatusResponse(505)
+            self.http_response = self.responses(505)
 
         if http_method != "GET":
-            self.http_response = self.getStatusResponse(405)
+            self.http_response = self.responses(405)
 
         # if the data checks the input specs return as requested
         corrected_path = self.check_path()
@@ -64,20 +65,20 @@ class MyWebServer(socketserver.BaseRequestHandler):
                     file = open(corrected_path, 'r')
                     file_content = file.read()
                     file.close()
-                    self.http_response = self.getStatusResponse(200).format(self.file_type , file_content)
+                    self.http_response = self.responses(200).format(self.file_type , file_content)
 
             else:
                 if not corrected_path[-1] == "/":
-                    self.http_response = self.getStatusResponse(301).format(file_name + '/')
+                    self.http_response = self.responses(301).format(file_name + '/')
                     
                 elif path.isfile(corrected_path + "index.html"):
                     file = open(corrected_path + "index.html" , 'r')
                     file_content = file.read()
                     file.close()
-                    self.http_response = self.getStatusResponse(200).format("text/html" , file_content)
+                    self.http_response = self.responses(200).format("text/html" , file_content)
 
-        else:
-            self.http_response = self.getStatusResponse(404)  
+ 
+
         self.request.sendall(self.http_response.encode('utf-8'))
 
 
@@ -104,7 +105,7 @@ class MyWebServer(socketserver.BaseRequestHandler):
         else:
             return False
 
-    def getStatusResponse(self, statusCode):
+    def getStatusResponse(self):
         """
             function for returning the http status response codes with
             their respective messages
@@ -117,7 +118,6 @@ class MyWebServer(socketserver.BaseRequestHandler):
             505: 'HTTP/1.1 505 HTTP Version Not Support\r\n\r\nThe specific HTTP version is not supported\r\n'
         }
 
-        return str(statusCode) + " " + self.responses[statusCode]
 
     def getFileType(self):
         """
