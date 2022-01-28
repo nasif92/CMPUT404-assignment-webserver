@@ -96,7 +96,6 @@ class MyWebServer(socketserver.BaseRequestHandler):
             else:
                 # 301 to correct paths
                 if corrected_path[-1] != "/":
-                    print("301 error")
                     self.http_response = self.http_responses[301].format(self.file_name + '/')
                     
                 elif path.isfile(corrected_path + "index.html"):
