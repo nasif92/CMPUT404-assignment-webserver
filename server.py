@@ -39,12 +39,18 @@ class MyWebServer(socketserver.BaseRequestHandler):
         """
         self.user_input = self.request.recv(1024).strip()
 
+        # in case of no http requests received
+        if not self.user_input:
+            return
+
         # some previous code
-        # print ("Got a request of: %s\n" % self.user_input)
+        # print ("Got a request of: %s\n" % self.user_input)   
 
         # parse the user input and store as variables after parsing
         user_inp = self.user_input.decode('utf-8').split('\r\n')[0].split(" ")
- 
+        if len(user_inp) == 0:
+            return
+
         # parts of client input
         self.http_method = user_inp[0]
         self.file_name = user_inp[1]
@@ -73,6 +79,7 @@ class MyWebServer(socketserver.BaseRequestHandler):
         if self.http_protocol != "HTTP/1.1":
             self.http_response = self.http_responses[505]
 
+        # 405 method not allowed
         if self.http_method != "GET":
             self.http_response = self.http_responses[405]
 
@@ -87,7 +94,9 @@ class MyWebServer(socketserver.BaseRequestHandler):
                     self.http_response = self.http_responses[200].format(self.file_type , file_content)
 
             else:
-                if not corrected_path[-1] == "/":
+                # 301 to correct paths
+                if corrected_path[-1] != "/":
+                    print("301 error")
                     self.http_response = self.http_responses[301].format(self.file_name + '/')
                     
                 elif path.isfile(corrected_path + "index.html"):
