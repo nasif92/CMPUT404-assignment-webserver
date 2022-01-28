@@ -25,9 +25,14 @@ examples thus some of the code is Copyright © 2001-2013 Python
 Software Foundation; All Rights Reserved under the PSF license (GPL
 compatible) http://docs.python.org/2/library/socketserver.html
 
+References
+==========
+* https://developer.mozilla.org/en-US/docs/Web/HTTP/Status 
+* https://docs.citrix.com/en-us/citrix-adc/current-release/appexpert/http-callout/http-request-response-notes-format.html
+
 Collaboration
 =============
 
-Another old student was consulted regarding the different http codes in the assignment.
+Collaborators were consulted regarding running the test scripts, some http status code information and ideas on making the project more modular.
 Source code was written by student (Nasif Hossain).
 
