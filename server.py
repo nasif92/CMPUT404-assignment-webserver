@@ -41,24 +41,40 @@ class MyWebServer(socketserver.BaseRequestHandler):
         http_protocol = self.data['http-ver']
         http_method = self.data['http-request']
 
-        # starting with 404 as default response code
-        self.http_response = self.getStatusResponse(404)
+        # variable for storing http responses
+        self.http_response = None
+
+        # variable storing the supporting file types
+        self.file_type = self.getFileType()
+
+        # preliminary tests for required http protocol and method
+        if http_protocol != "HTTP/1.1":
+            self.http_response = self.getStatusResponse(505)
+
+        if http_method != "GET":
+            self.http_response = self.getStatusResponse(405)
 
         # if the data checks the input specs return as requested
         corrected_path = self.check_path()
-        if corrected_path:        
+        if corrected_path and self.http_response == None:        
             print("The path given is", corrected_path)
+            
+            if path.isfile(corrected_path):
+                if "www" in path.abspath(corrected_path):
+                    file = open(corrected_path, 'r')
+                    file_content = file.read()
+                    file.close()
+                    self.http_response = self.getStatusResponse(200).format(self.file_type , file_content)
 
-            if not corrected_path[-1] == "/":
-                self.http_response = self.getStatusResponse(301).format(file_name + '/')
-                print("Getting a 301")
-            elif path.isfile(file_name):
-                print("Not Getting a 301")
-                file = open(corrected_path + "/index.html" , 'r')
-                file_content = file.read()
-                print("File content" , file_content)
-                file.close()
-                self.http_response = self.getStatusResponse(200).format("text/html" , file_content)
+            else:
+                if not corrected_path[-1] == "/":
+                    self.http_response = self.getStatusResponse(301).format(file_name + '/')
+                    
+                elif path.isfile(corrected_path + "index.html"):
+                    file = open(corrected_path + "index.html" , 'r')
+                    file_content = file.read()
+                    file.close()
+                    self.http_response = self.getStatusResponse(200).format("text/html" , file_content)
 
         else:
             self.http_response = self.getStatusResponse(404)  
@@ -89,15 +105,41 @@ class MyWebServer(socketserver.BaseRequestHandler):
             return False
 
     def getStatusResponse(self, statusCode):
+        """
+            function for returning the http status response codes with
+            their respective messages
+        """
         self.responses = {
             200: 'HTTP/1.1 200 OK\r\nContent-Type: {}\r\n\r\n{}\r\n',
-            301: 'HTTP/1.1 301 Moved Permanently\r\nLocation: {}\r\n\r\n',
-            404: 'HTTP/1.1 404 Not Found\r\n\r\n404 Error! File not found!\r\n',
-            405: 'HTTP/1.1 405 Method Not Allowed\r\n\r\nThe specific request method is not allowed\r\n',
+            301: 'HTTP/1.1 301 Moved Permanently\r\nLocation: {}\r\n\r\nConnection Closed\r\n\r\n',
+            404: 'HTTP/1.1 404 Not Found\r\n\r\nConnection Closed\r\n',
+            405: 'HTTP/1.1 405 Method Not Allowed\r\n\r\nConnection Closed\r\n',
             505: 'HTTP/1.1 505 HTTP Version Not Support\r\n\r\nThe specific HTTP version is not supported\r\n'
         }
 
         return str(statusCode) + " " + self.responses[statusCode]
+
+    def getFileType(self):
+        """
+        function for getting the different filetypes
+        supported and unsupported
+        """
+        filename = self.data['path'].split()[-1]
+        splitted = filename.split(".")
+        filename_extension = ''
+        if len(splitted) != 1:
+            filename_extension = splitted[-1]
+
+        # file types
+        content_type = "text/plain"             
+        if filename_extension == "css":
+            content_type = "text/css"
+        elif filename_extension == "html":
+            content_type = "text/html"
+        else:
+            content_type = "application/octet-stream"
+
+        return content_type
 
 if __name__ == "__main__":
     HOST, PORT = "localhost", 8080
