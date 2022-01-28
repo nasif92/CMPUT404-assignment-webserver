@@ -43,18 +43,21 @@ class MyWebServer(socketserver.BaseRequestHandler):
         # print ("Got a request of: %s\n" % self.user_input)
 
         # parse the user input and store as variables after parsing
-        inp = self.user_input.decode('utf-8').split('\r\n')[0].split(" ")
+        user_inp = self.user_input.decode('utf-8').split('\r\n')[0].split(" ")
  
         # parts of client input
-        self.http_method = inp[0]
-        self.file_name = inp[1]
-        self.file_path = path.abspath("www") + inp[1]
-        self.http_protocol = inp[2]
+        self.http_method = user_inp[0]
+        self.file_name = user_inp[1]
+        self.file_path = path.abspath("www") + user_inp[1]
+        self.http_protocol = user_inp[2]
 
         # Dictionary containing all required status codes and their responses
         self.http_responses = {
             200: 'HTTP/1.1 200 OK\r\nContent-Type: {}\r\n\r\n{}\r\n',
+            201: "Created\r\n\r\nConnection Closed\r\n",
+            202: "Accepted\r\n\r\nConnection Closed\r\n",
             301: 'HTTP/1.1 301 Moved Permanently\r\nLocation: {}\r\n\r\nConnection Closed\r\n\r\n',
+            302: "Found\r\n\r\nConnection Closed\r\n",
             404: 'HTTP/1.1 404 Not Found\r\n\r\nConnection Closed\r\n',
             405: 'HTTP/1.1 405 Method Not Allowed\r\n\r\nConnection Closed\r\n',
             505: 'HTTP/1.1 505 HTTP Version Not Support\r\n\r\nConnection Closed\r\n'
